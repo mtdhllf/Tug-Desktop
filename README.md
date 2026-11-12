@@ -1,19 +1,50 @@
-# Tug Desktop
+<h1 align="center">
+  <img src="apps/desktop/public/tug-icon.png" width="40" alt="Tug Desktop 图标"> Tug Desktop
+</h1>
 
-Windows 桌面下载器，支持 HTTP/HTTPS、BitTorrent 与磁力链接，多连接加速、断点续传和任务队列。
+<p align="center">Windows 桌面下载器 · HTTP/HTTPS · BitTorrent · 磁力链接 · 多连接 · 断点续传</p>
 
-当前版本：**v1.0.0**
+<p align="center">
+  <a href="https://github.com/mtdhllf/Tug-Desktop/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/mtdhllf/Tug-Desktop?display_name=tag&sort=semver"></a>
+  <img alt="Windows 10/11 x64" src="https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4?logo=windows&logoColor=white">
+  <img alt="Rust 2024" src="https://img.shields.io/badge/Rust-2024-000000?logo=rust&logoColor=white">
+  <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white">
+  <img alt="License Apache-2.0" src="https://img.shields.io/badge/License-Apache--2.0-blue">
+</p>
 
-- Android 版本：[Tug-Android](https://github.com/mtdhllf/Tug-Android)
+<p align="center">
+  当前版本 <b>v1.0.0</b> · Android 版：<a href="https://github.com/mtdhllf/Tug-Android">Tug-Android</a>
+</p>
+
+---
+
+## 项目成果
+
+- ✅ 完整的 Windows 桌面下载器：HTTP/HTTPS、BitTorrent、磁力链接统一任务队列
+- ✅ Rust 下载核心（HTTP/BT/调度/CLI）+ React 19 + Tauri 2 桌面壳
+- ✅ 托盘、通知、单实例、剪贴板检测、拖入种子等桌面集成
+- ✅ 与 Android 端一致的橄榄绿 Material 配色与图标
+- ✅ NSIS 安装器 + 便携版 zip
 
 ## 下载
 
-- [GitHub Releases](https://github.com/mtdhllf/Tug-Desktop/releases/latest)
-- [安装器 Tug-1.0.0-x64-setup.exe](https://github.com/mtdhllf/Tug-Desktop/releases/download/v1.0.0/Tug-1.0.0-x64-setup.exe)
-- [便携版 Tug-1.0.0-portable.zip](https://github.com/mtdhllf/Tug-Desktop/releases/download/v1.0.0/Tug-1.0.0-portable.zip)
-- [SHA-256 校验值](https://github.com/mtdhllf/Tug-Desktop/releases/download/v1.0.0/SHA256SUMS.txt)
+| 文件 | 说明 |
+|---|---|
+| [Tug-1.0.0-x64-setup.exe](https://github.com/mtdhllf/Tug-Desktop/releases/download/v1.0.0/Tug-1.0.0-x64-setup.exe) | Windows 10/11 x64 安装器 |
+| [Tug-1.0.0-portable.zip](https://github.com/mtdhllf/Tug-Desktop/releases/download/v1.0.0/Tug-1.0.0-portable.zip) | 免安装便携版 |
+| [SHA256SUMS.txt](https://github.com/mtdhllf/Tug-Desktop/releases/download/v1.0.0/SHA256SUMS.txt) | 下载校验值 |
 
----
+更多版本见 [GitHub Releases](https://github.com/mtdhllf/Tug-Desktop/releases)。
+
+## 截图
+
+| 总览 | 全部任务 |
+|---|---|
+| ![总览](public/screenshots/overview.png) | ![全部任务](public/screenshots/tasks.png) |
+
+| 设置 | 新建下载 |
+|---|---|
+| ![设置](public/screenshots/settings.png) | ![新建下载](public/screenshots/add.png) |
 
 ## 功能
 
@@ -153,6 +184,7 @@ crates/
 apps/desktop/
   src/            # React 前端
   src-tauri/      # Tauri 入口与命令
+  public/         # 前端静态资源与图标
 scripts/          # 根目录脚本共享环境检测
 packaging/        # NSIS 打包资源
 ```
