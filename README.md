@@ -161,4 +161,4 @@ packaging/        # NSIS 打包资源
 
 ## License
 
-MIT，详见 [LICENSE](LICENSE)。
+Apache License 2.0，详见 [LICENSE](LICENSE)。
