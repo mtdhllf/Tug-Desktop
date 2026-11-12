@@ -245,6 +245,7 @@ export const zhCN = {
   "settings.theme.dark": "深色清白",
   "settings.language": "界面语言",
   "settings.languageZh": "简体中文",
+  "settings.languageEn": "English",
   "settings.saved": "已保存",
   "settings.saveFailed": "保存失败",
   "settings.about.engine": "下载引擎",

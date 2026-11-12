@@ -46,7 +46,7 @@ export function Overview({
   onOpen,
   onReveal,
 }: OverviewProps) {
-  const { t } = useI18n();
+  const { t, pick } = useI18n();
   const [url, setUrl] = useState("");
 
   const active = useMemo(
@@ -87,12 +87,12 @@ export function Overview({
         <div className="hero-stats">
           <div><span>{t("overview.stat.active")}</span><strong>{String(counts.active).padStart(2, "0")} <small>{t("overview.unit.slots", { slots: settings.maxConcurrentTasks })}</small></strong></div>
           <div><span>{t("overview.stat.done")}</span><strong>{String(counts.completed).padStart(2, "0")} <small>{t("overview.unit.tasks")}</small></strong></div>
-          <div><span>下载目录</span><strong className="path-value" title={info?.downloadDir ?? settings.downloadDir}>{settings.downloadDir}</strong></div>
+          <div><span>{pick("下载目录", "Download folder")}</span><strong className="path-value" title={info?.downloadDir ?? settings.downloadDir}>{settings.downloadDir}</strong></div>
         </div>
       </section>
 
       <section className="card telemetry">
-        <div className="card-head"><h2>TELEMETRY</h2><span className="kicker">/ 实时吞吐</span><span className="spacer" /><span className={`live-dot ${totalSpeed > 0 ? "" : "idle"}`} /> {totalSpeed > 0 ? "STREAMING" : "IDLE"}</div>
+        <div className="card-head"><h2>TELEMETRY</h2><span className="kicker">{pick("/ 实时吞吐", "/ LIVE THROUGHPUT")}</span><span className="spacer" /><span className={`live-dot ${totalSpeed > 0 ? "" : "idle"}`} /> {totalSpeed > 0 ? "STREAMING" : "IDLE"}</div>
         <div className="telemetry-main">
           <div className="telemetry-speed">{formatBytes(totalSpeed)}<small>/s</small></div>
           <div className="telemetry-chart">
@@ -172,10 +172,10 @@ export function Overview({
         <section className="card mini-card network">
           <div className="card-head"><h2>{t("overview.network")}</h2><span className="spacer" /><HardDriveIcon size={14} /></div>
           <div className="kv-line"><span><WifiIcon size={13} /> {t("overview.dht")}</span><b className={settings.btDht ? "ok" : "muted"}>{settings.btDht ? t("overview.connected") : t("overview.disconnected")}</b></div>
-          <div className="kv-line"><span>{t("overview.port")}</span><b>{settings.btListenPort ?? "随机"}</b></div>
+          <div className="kv-line"><span>{t("overview.port")}</span><b>{settings.btListenPort ?? pick("随机", "Random")}</b></div>
           <div className="kv-line"><span>{t("overview.upnp")}</span><b className={settings.btUpnp ? "ok" : "muted"}>{settings.btUpnp ? t("overview.mapped") : "—"}</b></div>
           <div className="kv-line"><span>{t("overview.limit")}</span><b>{settings.globalDownloadLimitKib ? `${Number((settings.globalDownloadLimitKib / 1024).toFixed(2))} MB/s` : t("overview.unlimited")}</b></div>
-          <div className="network-note">{uploadSpeed > 0 ? `${formatBytes(uploadSpeed)}/s ↑` : "本地运行 · 仅本机"}</div>
+          <div className="network-note">{uploadSpeed > 0 ? `${formatBytes(uploadSpeed)}/s ↑` : pick("本地运行 · 仅本机", "Running locally · this machine only")}</div>
         </section>
       </aside>
     </div>

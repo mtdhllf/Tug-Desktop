@@ -13,6 +13,10 @@
 </p>
 
 <p align="center">
+  <b>简体中文</b> · <a href="README.en.md">English</a>
+</p>
+
+<p align="center">
   当前版本 <b>v1.0.0</b> · Android 版：<a href="https://github.com/mtdhllf/Tug-Android">Tug-Android</a>
 </p>
 

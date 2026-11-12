@@ -41,7 +41,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 
 export function Sidebar({ view, counts, downloadDir, onSelect }: SidebarProps) {
-  const { t } = useI18n();
+  const { t, pick } = useI18n();
 
   return (
     <aside className="sidebar">
@@ -76,11 +76,11 @@ export function Sidebar({ view, counts, downloadDir, onSelect }: SidebarProps) {
       </nav>
 
       <div className="side-storage">
-        <div className="side-storage-label">下载目录</div>
+        <div className="side-storage-label">{pick("下载目录", "Download folder")}</div>
         <div className="side-storage-path" title={downloadDir}>{downloadDir || "—"}</div>
         <div className="side-storage-meta">
-          <span>{counts.all} 个任务</span>
-          <span>{counts.active} 个进行中</span>
+          <span>{pick(`${counts.all} 个任务`, counts.all === 1 ? "1 task" : `${counts.all} tasks`)}</span>
+          <span>{pick(`${counts.active} 个进行中`, `${counts.active} active`)}</span>
         </div>
       </div>
 

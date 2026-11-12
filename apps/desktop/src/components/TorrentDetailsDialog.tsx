@@ -19,7 +19,7 @@ interface TorrentDetailsDialogProps {
 type Tab = "files" | "peers" | "trackers";
 
 export function TorrentDetailsDialog({ task, onClose }: TorrentDetailsDialogProps) {
-  const { t } = useI18n();
+  const { t, pick } = useI18n();
   const [tab, setTab] = useState<Tab>("files");
   const [files, setFiles] = useState<TorrentFileInfo[]>([]);
   const [runtime, setRuntime] = useState<TorrentRuntimeDetails | null>(null);
@@ -151,7 +151,7 @@ export function TorrentDetailsDialog({ task, onClose }: TorrentDetailsDialogProp
                 <button type="button" className="link-btn" onClick={() => setSelected(new Set())}>{t("bt.clear")}</button>
               </div>
               <div className="file-table">
-                <div className="file-row head"><span></span><span>文件</span><span>大小</span><span>进度</span><span>优先级</span><span>状态</span></div>
+                <div className="file-row head"><span></span><span>{pick("文件", "File")}</span><span>{pick("大小", "Size")}</span><span>{pick("进度", "Progress")}</span><span>{pick("优先级", "Priority")}</span><span>{pick("状态", "Status")}</span></div>
                 {files.map((file) => (
                   <div className="file-row" key={file.index}>
                     <button type="button" className="checkbox" data-checked={selected.has(file.index)} onClick={() => toggle(file.index)} disabled={completed}>{selected.has(file.index) ? <CheckIcon size={11} /> : ""}</button>
@@ -161,7 +161,7 @@ export function TorrentDetailsDialog({ task, onClose }: TorrentDetailsDialogProp
                     </div>
                     <span className="cell-strong">{formatBytes(file.length)}</span>
                     <span className="cell-sub">{file.selected ? "100%" : "0%"}</span>
-                    <span className="priority">{file.selected ? "普通" : "跳过"}</span>
+                    <span className="priority">{file.selected ? pick("普通", "Normal") : pick("跳过", "Skip")}</span>
                     <span className={`state-tag ${file.selected ? "completed" : "queued"}`}>{file.selected ? "DONE" : "WAIT"}</span>
                   </div>
                 ))}
@@ -171,7 +171,7 @@ export function TorrentDetailsDialog({ task, onClose }: TorrentDetailsDialogProp
 
           {!loading && tab === "peers" && (
             <div className="file-table">
-              <div className="file-row peers head"><span>PEER</span><span>客户端</span><span>状态</span><span>下载</span><span>上传</span></div>
+              <div className="file-row peers head"><span>PEER</span><span>{pick("客户端", "Client")}</span><span>{pick("状态", "Status")}</span><span>{pick("下载", "Download")}</span><span>{pick("上传", "Upload")}</span></div>
               {(runtime?.peers ?? []).length === 0 ? <div className="inline-empty">{t("bt.noPeers")}</div> : runtime?.peers.map((peer) => (
                 <div className="file-row peers" key={peer.address}>
                   <span className="mono">{peer.address}</span>
@@ -190,10 +190,10 @@ export function TorrentDetailsDialog({ task, onClose }: TorrentDetailsDialogProp
                 <div className="tracker-row" key={tracker}>
                   <span className="status-dot" />
                   <span className="mono">{tracker}</span>
-                  <span className="state-tag queued">已配置</span>
+                  <span className="state-tag queued">{pick("已配置", "Configured")}</span>
                 </div>
               ))}
-              <div className="form-note">Tracker 状态由引擎运行时提供；超时会在下次 announce 自动重试。</div>
+              <div className="form-note">{pick("Tracker 状态由引擎运行时提供；超时会在下次 announce 自动重试。", "Tracker status comes from the engine runtime; timeouts retry automatically on the next announce.")}</div>
             </div>
           )}
         </div>

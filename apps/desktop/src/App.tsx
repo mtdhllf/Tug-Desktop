@@ -62,7 +62,7 @@ function sortTasks(tasks: TaskView[]): TaskView[] {
 }
 
 function App() {
-  const { t } = useI18n();
+  const { t, pick } = useI18n();
   const [view, setView] = useState<View>("overview");
   const [tasks, setTasks] = useState<TaskView[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -403,10 +403,13 @@ function App() {
 
   const pageSubtitle =
     view === "overview"
-      ? `${counts.active} 个进行中 · ${formatBytes(tasks.reduce((sum, task) => sum + task.speedBps, 0))}/s · DHT ${settings?.btDht ? "已连接" : "未启用"}`
+      ? pick(
+          `${counts.active} 个进行中 · ${formatBytes(tasks.reduce((sum, task) => sum + task.speedBps, 0))}/s · DHT ${settings?.btDht ? "已连接" : "未启用"}`,
+          `${counts.active} active · ${formatBytes(tasks.reduce((sum, task) => sum + task.speedBps, 0))}/s · DHT ${settings?.btDht ? "connected" : "disabled"}`,
+        )
       : view === "settings"
-        ? "下载、网络、BitTorrent 与外观"
-        : `${visibleTasks.length} 个任务 · ${counts.active} 个进行中`;
+        ? pick("下载、网络、BitTorrent 与外观", "Downloads, network, BitTorrent, and appearance")
+        : pick(`${visibleTasks.length} 个任务 · ${counts.active} 个进行中`, `${visibleTasks.length} ${visibleTasks.length === 1 ? "task" : "tasks"} · ${counts.active} active`);
 
   const statusText = error ? t("status.offline") : loading ? t("diag.checking") : t("status.ready");
 
@@ -452,23 +455,23 @@ function App() {
               <div className="error-panel">
                 <div className="error-panel-icon"><DownloadIcon size={20} /></div>
                 <div>
-                  <h2>连接不到下载引擎。</h2>
-                  <p>前端已加载，但 Tauri IPC 没有响应。任务数据尚未丢失。</p>
+                  <h2>{pick("连接不到下载引擎。", "Cannot reach the download engine.")}</h2>
+                  <p>{pick("前端已加载，但 Tauri IPC 没有响应。任务数据尚未丢失。", "The frontend loaded, but Tauri IPC is not responding. Task data has not been lost.")}</p>
                 </div>
                 <span className="tag fail">IPC_TIMEOUT</span>
               </div>
               <div className="error-details">
-                <div><span>错误</span><code>{error}</code></div>
-                <div><span>配置目录</span><code>%APPDATA%\\Tug</code></div>
-                <div><span>最近心跳</span><code>{new Date().toLocaleTimeString()}</code></div>
+                <div><span>{pick("错误", "Error")}</span><code>{error}</code></div>
+                <div><span>{pick("配置目录", "Config folder")}</span><code>%APPDATA%\\Tug</code></div>
+                <div><span>{pick("最近心跳", "Last heartbeat")}</span><code>{new Date().toLocaleTimeString()}</code></div>
               </div>
               <div className="error-actions">
-                <button type="button" className="btn btn-primary" onClick={() => void refresh()}>重新连接</button>
-                <button type="button" className="btn" onClick={() => void refresh()}>查看诊断</button>
+                <button type="button" className="btn btn-primary" onClick={() => void refresh()}>{pick("重新连接", "Reconnect")}</button>
+                <button type="button" className="btn" onClick={() => void refresh()}>{pick("查看诊断", "View diagnostics")}</button>
               </div>
             </div>
           ) : loading && !settings ? (
-            <div className="loading-state"><div className="spinner" /> 正在读取任务…</div>
+            <div className="loading-state"><div className="spinner" /> {pick("正在读取任务…", "Loading tasks…")}</div>
           ) : view === "overview" && settings ? (
             <Overview
               tasks={tasks}
@@ -530,12 +533,12 @@ function App() {
 
           {clipboardUrl && !addOpen && (
             <div className="clipboard-toast">
-              <div className="clipboard-toast-head"><span className="status-dot" /> 剪贴板检测到链接</div>
+              <div className="clipboard-toast-head"><span className="status-dot" /> {pick("剪贴板检测到链接", "Link found in clipboard")}</div>
               <div className="clipboard-toast-body">
                 <code title={clipboardUrl}>{clipboardUrl}</code>
                 <div className="clipboard-toast-actions">
-                  <button type="button" className="btn btn-sm" onClick={() => setClipboardUrl(null)}>忽略</button>
-                  <button type="button" className="btn btn-sm btn-primary" onClick={() => { setAddInitialUrl(clipboardUrl); setAddOpen(true); setClipboardUrl(null); }}>新建下载</button>
+                  <button type="button" className="btn btn-sm" onClick={() => setClipboardUrl(null)}>{pick("忽略", "Ignore")}</button>
+                  <button type="button" className="btn btn-sm btn-primary" onClick={() => { setAddInitialUrl(clipboardUrl); setAddOpen(true); setClipboardUrl(null); }}>{pick("新建下载", "New download")}</button>
                 </div>
               </div>
             </div>

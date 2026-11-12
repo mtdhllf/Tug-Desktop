@@ -21,7 +21,7 @@ export function AddTaskDialog({
   onClose,
   onAdded,
 }: AddTaskDialogProps) {
-  const { t } = useI18n();
+  const { t, pick } = useI18n();
   const [url, setUrl] = useState("");
   const [saveDir, setSaveDir] = useState(defaultDir);
   const [fileName, setFileName] = useState("");
@@ -132,8 +132,8 @@ export function AddTaskDialog({
         <form id="add-task-form" className="add-layout" onSubmit={submit}>
           <div className="add-main">
             <div className="seg add-tabs">
-              <button type="button" className="active">链接 / URL</button>
-              <button type="button" onClick={pickTorrent}>种子 / TORRENT</button>
+              <button type="button" className="active">{pick("链接 / URL", "LINK / URL")}</button>
+              <button type="button" onClick={pickTorrent}>{pick("种子 / TORRENT", "TORRENT")}</button>
             </div>
 
             <label className="field">
@@ -146,7 +146,7 @@ export function AddTaskDialog({
                 autoFocus
                 spellCheck={false}
               />
-              <div className="hint">支持 HTTP/HTTPS、magnet:?xt=...，也可直接选择 .torrent。</div>
+              <div className="hint">{pick("支持 HTTP/HTTPS、magnet:?xt=...，也可直接选择 .torrent。", "Supports HTTP/HTTPS, magnet:?xt=..., or pick a .torrent file directly.")}</div>
             </label>
 
             <div className="field-row">
@@ -174,7 +174,7 @@ export function AddTaskDialog({
                     <span>CONN</span>
                   </div>
                 </label>
-                <div className="form-note vertical">高级选项（代理、Header、Cookie、SHA-256）将在 M4 开放。</div>
+                <div className="form-note vertical">{pick("高级选项（代理、Header、Cookie、SHA-256）将在 M4 开放。", "Advanced options (proxy, headers, cookies, SHA-256) arrive in M4.")}</div>
               </div>
             )}
 
@@ -184,23 +184,23 @@ export function AddTaskDialog({
           <aside className="add-side">
             <div className="tip">
               <div className="tip-kicker">BT / MAGNET</div>
-              <p>磁力与种子任务会先获取元数据，然后自动开始下载；文件选择可在任务详情中调整。</p>
+              <p>{pick("磁力与种子任务会先获取元数据，然后自动开始下载；文件选择可在任务详情中调整。", "Magnet and torrent tasks fetch metadata first, then start downloading automatically; file selection can be adjusted in the task details.")}</p>
             </div>
             <div className="summary">
-              <div className="summary-row"><span>类型</span><b>{isTorrent ? "BitTorrent" : "HTTP"}</b></div>
-              <div className="summary-row"><span>连接数</span><b>{isTorrent ? "自动" : connections}</b></div>
-              <div className="summary-row"><span>保存到</span><b title={saveDir}>{saveDir || "—"}</b></div>
-              <div className="summary-row"><span>校验</span><b>完成后可选</b></div>
+              <div className="summary-row"><span>{pick("类型", "Type")}</span><b>{isTorrent ? "BitTorrent" : "HTTP"}</b></div>
+              <div className="summary-row"><span>{pick("连接数", "Connections")}</span><b>{isTorrent ? pick("自动", "Auto") : connections}</b></div>
+              <div className="summary-row"><span>{pick("保存到", "Save to")}</span><b title={saveDir}>{saveDir || "—"}</b></div>
+              <div className="summary-row"><span>{pick("校验", "Verification")}</span><b>{pick("完成后可选", "Optional after completion")}</b></div>
             </div>
             <div className="tip">
               <div className="tip-kicker">DROP ZONE</div>
-              <p>也可以把 .torrent、磁力或链接拖进主窗口，直接加入队列。</p>
+              <p>{pick("也可以把 .torrent、磁力或链接拖进主窗口，直接加入队列。", "You can also drag a .torrent, magnet link, or URL into the main window to add it to the queue.")}</p>
             </div>
           </aside>
         </form>
 
         <div className="modal-foot">
-          <span className="mono faint">ESC 取消 · ENTER 开始</span>
+          <span className="mono faint">{pick("ESC 取消 · ENTER 开始", "ESC CANCEL · ENTER START")}</span>
           <span className="toolbar-spacer" />
           <button type="button" className="btn" onClick={onClose}>{t("add.cancel")}</button>
           <button type="submit" form="add-task-form" className="btn btn-primary" disabled={busy}>

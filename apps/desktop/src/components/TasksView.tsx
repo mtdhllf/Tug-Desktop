@@ -59,7 +59,7 @@ export function TasksView({
   onReveal,
   onNew,
 }: TasksViewProps) {
-  const { t } = useI18n();
+  const { t, pick } = useI18n();
   const selectedCount = selected.size;
 
   return (
@@ -84,7 +84,7 @@ export function TasksView({
           ))}
         </div>
         <span className="toolbar-spacer" />
-        <span className="toolbar-label">排序</span>
+        <span className="toolbar-label">{pick("排序", "Sort")}</span>
         <select
           className="sort-select"
           value={sort}
@@ -131,8 +131,8 @@ export function TasksView({
             onReveal={onReveal}
           />
           <div className="table-footer">
-            <span>{t("tasks.count", { count: tasks.length })}</span>
-            <span>按创建时间排序</span>
+            <span>{pick(`${tasks.length} 个任务`, `${tasks.length} ${tasks.length === 1 ? "task" : "tasks"}`)}</span>
+            <span>{pick("按创建时间排序", "Sorted by creation time")}</span>
           </div>
         </>
       )}

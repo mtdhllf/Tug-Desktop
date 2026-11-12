@@ -50,7 +50,7 @@ export function TaskTable({
   onOpen,
   onReveal,
 }: TaskTableProps) {
-  const { t } = useI18n();
+  const { t, pick } = useI18n();
   const allSelected = tasks.length > 0 && tasks.every((task) => selected.has(task.id));
 
   return (
@@ -65,13 +65,13 @@ export function TaskTable({
         >
           {allSelected ? "✓" : ""}
         </button>
-        <span>任务</span>
-        <span>状态</span>
-        <span>进度</span>
-        <span>大小</span>
-        <span>速度</span>
+        <span>{pick("任务", "Task")}</span>
+        <span>{pick("状态", "Status")}</span>
+        <span>{pick("进度", "Progress")}</span>
+        <span>{pick("大小", "Size")}</span>
+        <span>{pick("速度", "Speed")}</span>
         <span>PEER</span>
-        <span>操作</span>
+        <span>{pick("操作", "Actions")}</span>
       </div>
       {tasks.map((task) => {
         const percent = percentOf(task);

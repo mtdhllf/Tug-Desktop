@@ -12,7 +12,7 @@ interface BulkRemoveDialogProps {
 
 /** 多选删除确认。与单任务删除一致，只有确认后才真正删除。 */
 export function BulkRemoveDialog({ tasks, onClose, onConfirm }: BulkRemoveDialogProps) {
-  const { t } = useI18n();
+  const { t, pick } = useI18n();
   const [deleteFiles, setDeleteFiles] = useState(false);
   const [busy, setBusy] = useState(false);
 
@@ -54,16 +54,16 @@ export function BulkRemoveDialog({ tasks, onClose, onConfirm }: BulkRemoveDialog
             <span className="file-chip"><FileIcon size={16} /></span>
             <div>
               <b>{t("tasks.bulk.removeMessage", { count: tasks.length })}</b>
-              <span>{preview.map((task) => task.name).join("、")}{tasks.length > preview.length ? ` 等 ${tasks.length} 个任务` : ""} · {formatBytes(total)}</span>
+              <span>{preview.map((task) => task.name).join(pick("、", ", "))}{tasks.length > preview.length ? pick(` 等 ${tasks.length} 个任务`, ` and ${tasks.length - preview.length} more`) : ""} · {formatBytes(total)}</span>
             </div>
           </div>
           <label className="check-row remove-check">
             <input type="checkbox" checked={deleteFiles} onChange={(event) => setDeleteFiles(event.currentTarget.checked)} />
-            <span><b>{t("task.deleteFiles")}</b><em>将删除 .part、分片数据与任务元数据；不可恢复。</em></span>
+            <span><b>{t("task.deleteFiles")}</b><em>{pick("将删除 .part、分片数据与任务元数据；不可恢复。", "Deletes .part files, piece data, and task metadata; this cannot be undone.")}</em></span>
           </label>
         </div>
         <div className="modal-foot">
-          <span className="mono faint">只删除任务不会删除磁盘文件</span>
+          <span className="mono faint">{pick("只删除任务不会删除磁盘文件", "Deleting the tasks will not delete files on disk")}</span>
           <span className="toolbar-spacer" />
           <button type="button" className="btn" onClick={onClose}>{t("add.cancel")}</button>
           <button type="button" className="btn btn-danger" onClick={confirm} disabled={busy}>
