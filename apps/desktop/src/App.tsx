@@ -1,10 +1,12 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { UnlistenFn } from "@tauri-apps/api/event";
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { readText } from "@tauri-apps/plugin-clipboard-manager";
 import { openPath, revealItemInDir } from "@tauri-apps/plugin-opener";
 import { AddTaskDialog } from "./components/AddTaskDialog";
 import { BulkRemoveDialog } from "./components/BulkRemoveDialog";
+import { BulkFeedback } from "./components/BulkFeedback";
+import { runBulkAction, type BulkAction, type BulkResult } from "./lib/bulkActions";
 import { Overview } from "./components/Overview";
 import { RemoveTaskDialog } from "./components/RemoveTaskDialog";
 import { SettingsPage, type SettingsTab } from "./components/SettingsPage";
@@ -29,7 +31,6 @@ import {
   type Settings,
   type TaskView,
 } from "./lib/backend";
-import { formatBytes } from "./lib/format";
 import { extractDownloadCandidate, isTorrentPath } from "./lib/downloadLink";
 import { platformLabel } from "./lib/platform";
 import { DownloadIcon } from "./components/icons";
@@ -78,6 +79,9 @@ function App() {
   const [removeTarget, setRemoveTarget] = useState<TaskView | null>(null);
   const [bulkRemoveTargets, setBulkRemoveTargets] = useState<TaskView[] | null>(null);
   const [detailsTarget, setDetailsTarget] = useState<TaskView | null>(null);
+  const [bulkResult, setBulkResult] = useState<BulkResult | null>(null);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const bulkRunning = useRef(false);
   const [clipboardUrl, setClipboardUrl] = useState<string | null>(null);
 
   const refreshTasks = useCallback(async () => {
@@ -345,6 +349,7 @@ function App() {
   }
 
   function toggleSelected(id: number) {
+    if (bulkRunning.current) return;
     setSelected((previous) => {
       const next = new Set(previous);
       if (next.has(id)) next.delete(id);
@@ -354,46 +359,67 @@ function App() {
   }
 
   function toggleAll() {
+    if (bulkRunning.current) return;
     const all = visibleTasks.every((task) => selected.has(task.id));
     setSelected(all ? new Set() : new Set(visibleTasks.map((task) => task.id)));
   }
 
+  async function applyBulk(action: BulkAction, targets: TaskView[], deleteFiles = false) {
+    if (bulkRunning.current || targets.length === 0) return;
+    bulkRunning.current = true;
+    setBulkBusy(true);
+    setBulkResult(null);
+    try {
+      const result = await runBulkAction(action, targets, task =>
+        action === "pause" ? pauseTask(task.id) : action === "resume" ? resumeTask(task.id) : removeTask(task.id, deleteFiles),
+      );
+      setBulkResult(result);
+      // Keep only failed tasks selected; retry never repeats successful actions.
+      setSelected(new Set(result.failures.map(({ task }) => task.id)));
+      await refreshTasks();
+    } finally {
+      bulkRunning.current = false;
+      setBulkBusy(false);
+    }
+  }
+
   async function bulkPause() {
-    const targets = visibleTasks.filter((task) => selected.has(task.id) && ["downloading", "fetching_metadata", "seeding"].includes(task.state));
-    const ids = new Set(targets.map((task) => task.id));
-    setTasks((previous) =>
-      previous.map((task) =>
-        ids.has(task.id) ? { ...task, state: "paused", speedBps: 0, uploadSpeedBps: 0, etaSecs: null } : task,
-      ),
-    );
-    await Promise.all(targets.map((task) => pauseTask(task.id).catch(() => undefined)));
-    setSelected(new Set());
-    await refreshTasks();
+    await applyBulk("pause", visibleTasks.filter(task => selected.has(task.id) && ["downloading", "fetching_metadata", "seeding"].includes(task.state)));
   }
 
   async function bulkResume() {
-    const targets = visibleTasks.filter((task) => selected.has(task.id) && ["paused", "failed"].includes(task.state));
-    await Promise.all(targets.map((task) => resumeTask(task.id).catch(() => undefined)));
-    setSelected(new Set());
-    await refreshTasks();
+    await applyBulk("resume", visibleTasks.filter(task => selected.has(task.id) && ["paused", "failed"].includes(task.state)));
   }
 
   function requestBulkRemove() {
-    const targets = visibleTasks.filter((task) => selected.has(task.id));
-    if (targets.length === 0) return;
-    // 只打开确认弹层；此时绝不能删除或清空列表。
-    setBulkRemoveTargets(targets);
+    if (bulkRunning.current) return;
+    const targets = visibleTasks.filter(task => selected.has(task.id));
+    if (targets.length > 0) setBulkRemoveTargets(targets);
   }
 
   async function confirmBulkRemove(deleteFiles: boolean) {
     const targets = bulkRemoveTargets;
-    if (!targets?.length) return;
-    for (const task of targets) {
-      await removeTask(task.id, deleteFiles).catch(() => undefined);
-    }
+    if (!targets?.length || bulkRunning.current) return;
+    await applyBulk("remove", targets, deleteFiles);
     setBulkRemoveTargets(null);
-    setSelected(new Set());
-    await refreshTasks();
+  }
+
+  async function retryBulk() {
+    if (!bulkResult || bulkRunning.current) return;
+    const ids = new Set(bulkResult.failures.map(({ task }) => task.id));
+    const targets = tasks.filter(task => ids.has(task.id));
+    if (bulkResult.action === "remove") {
+      // Deletion always needs a new confirmation; file deletion defaults to off.
+      if (targets.length > 0) setBulkRemoveTargets(targets);
+      else { setBulkResult(null); setSelected(new Set()); }
+    } else {
+      const action = bulkResult.action;
+      const eligible = targets.filter(task => action === "pause"
+        ? ["downloading", "fetching_metadata", "seeding"].includes(task.state)
+        : ["paused", "failed"].includes(task.state));
+      if (eligible.length > 0) await applyBulk(action, eligible);
+      else { setBulkResult(null); setSelected(new Set()); }
+    }
   }
 
   const pageTitle =
@@ -404,12 +430,12 @@ function App() {
   const pageSubtitle =
     view === "overview"
       ? pick(
-          `${counts.active} 个进行中 · ${formatBytes(tasks.reduce((sum, task) => sum + task.speedBps, 0))}/s · DHT ${settings?.btDht ? "已连接" : "未启用"}`,
-          `${counts.active} active · ${formatBytes(tasks.reduce((sum, task) => sum + task.speedBps, 0))}/s · DHT ${settings?.btDht ? "connected" : "disabled"}`,
+          `${counts.active} 个未完成 · ${counts.completed} 个已完成`,
+          `${counts.active} unfinished · ${counts.completed} completed`,
         )
       : view === "settings"
         ? pick("下载、网络、BitTorrent 与外观", "Downloads, network, BitTorrent, and appearance")
-        : pick(`${visibleTasks.length} 个任务 · ${counts.active} 个进行中`, `${visibleTasks.length} ${visibleTasks.length === 1 ? "task" : "tasks"} · ${counts.active} active`);
+        : pick(`${visibleTasks.length} 个任务`, `${visibleTasks.length} ${visibleTasks.length === 1 ? "task" : "tasks"}`);
 
   const statusText = error ? t("status.offline") : loading ? t("diag.checking") : t("status.ready");
 
@@ -450,24 +476,22 @@ function App() {
             }
           }}
         >
+          {bulkResult && <BulkFeedback result={bulkResult} busy={bulkBusy} onRetry={() => void retryBulk()} onDismiss={() => setBulkResult(null)} />}
+          {bulkBusy && <div className="bulk-progress" role="status">{pick("正在处理所选任务…", "Processing selected tasks…")}</div>}
           {error && !info ? (
             <div className="error-state">
               <div className="error-panel">
                 <div className="error-panel-icon"><DownloadIcon size={20} /></div>
                 <div>
                   <h2>{pick("连接不到下载引擎。", "Cannot reach the download engine.")}</h2>
-                  <p>{pick("前端已加载，但 Tauri IPC 没有响应。任务数据尚未丢失。", "The frontend loaded, but Tauri IPC is not responding. Task data has not been lost.")}</p>
+                  <p>{pick("请稍后重试。如果仍无法连接，请重新打开 Tug。", "Try again in a moment. If the problem persists, restart Tug.")}</p>
                 </div>
-                <span className="tag fail">IPC_TIMEOUT</span>
               </div>
               <div className="error-details">
                 <div><span>{pick("错误", "Error")}</span><code>{error}</code></div>
-                <div><span>{pick("配置目录", "Config folder")}</span><code>%APPDATA%\\Tug</code></div>
-                <div><span>{pick("最近心跳", "Last heartbeat")}</span><code>{new Date().toLocaleTimeString()}</code></div>
               </div>
               <div className="error-actions">
                 <button type="button" className="btn btn-primary" onClick={() => void refresh()}>{pick("重新连接", "Reconnect")}</button>
-                <button type="button" className="btn" onClick={() => void refresh()}>{pick("查看诊断", "View diagnostics")}</button>
               </div>
             </div>
           ) : loading && !settings ? (
@@ -478,6 +502,8 @@ function App() {
               counts={counts}
               settings={settings}
               info={info}
+              busy={bulkBusy}
+              onPauseAll={() => void applyBulk("pause", tasks.filter(task => ["downloading", "fetching_metadata"].includes(task.state)))}
               onQuickAdd={(url) => {
                 setAddInitialUrl(url);
                 setAddOpen(true);
@@ -510,6 +536,7 @@ function App() {
               query={query}
               sort={sort}
               selected={selected}
+              busy={bulkBusy}
               onSort={setSort}
               onNavigate={navigate}
               onToggle={toggleSelected}
@@ -547,9 +574,6 @@ function App() {
 
         <footer className="statusbar">
           <span className="status-left"><span className={`status-dot ${error ? "error" : loading ? "pending" : "ok"}`} />{statusText}</span>
-          <span>DHT {settings?.btDht ? "CONNECTED" : "OFF"}</span>
-          <span>PORT {settings?.btListenPort ?? "AUTO"}</span>
-          <span>UPnP {settings?.btUpnp ? "MAPPED" : "OFF"}</span>
           <span className="statusbar-right">{info ? `${info.name} v${info.version} · ${platformLabel(info.platform)}` : t("status.m0")}</span>
         </footer>
       </main>

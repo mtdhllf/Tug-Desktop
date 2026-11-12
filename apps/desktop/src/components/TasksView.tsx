@@ -12,6 +12,7 @@ interface TasksViewProps {
   query: string;
   sort: "recent" | "speed" | "name";
   selected: Set<number>;
+  busy: boolean;
   onSort: (sort: "recent" | "speed" | "name") => void;
   onNavigate: (view: View) => void;
   onToggle: (id: number) => void;
@@ -43,6 +44,7 @@ export function TasksView({
   query,
   sort,
   selected,
+  busy,
   onSort,
   onNavigate,
   onToggle,
@@ -60,7 +62,7 @@ export function TasksView({
   onNew,
 }: TasksViewProps) {
   const { t, pick } = useI18n();
-  const selectedCount = selected.size;
+  const selectedCount = tasks.filter(task => selected.has(task.id)).length;
 
   return (
     <div className="tasks-view">
@@ -79,7 +81,7 @@ export function TasksView({
               className={`chip ${view === id ? "active" : ""}`}
               onClick={() => onNavigate(id)}
             >
-              {t(label)} <span>{String(count).padStart(2, "0")}</span>
+              {t(label)} <span>{count}</span>
             </button>
           ))}
         </div>
@@ -100,10 +102,10 @@ export function TasksView({
         <div className="bulkbar">
           <span>{t("tasks.selected", { count: selectedCount })}</span>
           <span className="toolbar-spacer" />
-          <button type="button" className="btn btn-sm" onClick={onBulkPause}>{t("tasks.bulk.pause")}</button>
-          <button type="button" className="btn btn-sm" onClick={onBulkResume}>{t("tasks.bulk.resume")}</button>
-          <button type="button" className="btn btn-sm btn-danger" onClick={onBulkRemove}>{t("tasks.bulk.remove")}</button>
-          <button type="button" className="btn btn-sm" onClick={onClearSelection}>{t("tasks.bulk.clear")}</button>
+          <button type="button" className="btn btn-sm" disabled={busy || !tasks.some(task => selected.has(task.id) && ["downloading", "fetching_metadata", "seeding"].includes(task.state))} onClick={onBulkPause}>{t("tasks.bulk.pause")}</button>
+          <button type="button" className="btn btn-sm" disabled={busy || !tasks.some(task => selected.has(task.id) && ["paused", "failed"].includes(task.state))} onClick={onBulkResume}>{t("tasks.bulk.resume")}</button>
+          <button type="button" className="btn btn-sm btn-danger" disabled={busy} onClick={onBulkRemove}>{t("tasks.bulk.remove")}</button>
+          <button type="button" className="btn btn-sm" disabled={busy} onClick={onClearSelection}>{t("tasks.bulk.clear")}</button>
         </div>
       )}
 
@@ -132,7 +134,7 @@ export function TasksView({
           />
           <div className="table-footer">
             <span>{pick(`${tasks.length} 个任务`, `${tasks.length} ${tasks.length === 1 ? "task" : "tasks"}`)}</span>
-            <span>{pick("按创建时间排序", "Sorted by creation time")}</span>
+            <span>{t(`tasks.sort.${sort}`)}</span>
           </div>
         </>
       )}

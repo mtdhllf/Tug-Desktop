@@ -55,7 +55,6 @@ export function Sidebar({ view, counts, downloadDir, onSelect }: SidebarProps) {
         </div>
       </div>
 
-      <div className="nav-label">LIBRARY</div>
       <nav className="nav" aria-label={t("nav.all")}>
         {NAV_ITEMS.map(({ id, label, icon: Icon, count }) => {
           const active = view === id;
@@ -69,7 +68,7 @@ export function Sidebar({ view, counts, downloadDir, onSelect }: SidebarProps) {
             >
               <Icon size={16} />
               <span className="nav-label-text">{t(label)}</span>
-              {count && <span className="nav-count">{String(counts[count]).padStart(2, "0")}</span>}
+              {count && <span className="nav-count">{counts[count]}</span>}
             </button>
           );
         })}
@@ -80,7 +79,7 @@ export function Sidebar({ view, counts, downloadDir, onSelect }: SidebarProps) {
         <div className="side-storage-path" title={downloadDir}>{downloadDir || "—"}</div>
         <div className="side-storage-meta">
           <span>{pick(`${counts.all} 个任务`, counts.all === 1 ? "1 task" : `${counts.all} tasks`)}</span>
-          <span>{pick(`${counts.active} 个进行中`, `${counts.active} active`)}</span>
+          <span>{pick(`${counts.active} 个未完成`, `${counts.active} unfinished`)}</span>
         </div>
       </div>
 
@@ -93,10 +92,6 @@ export function Sidebar({ view, counts, downloadDir, onSelect }: SidebarProps) {
           <SettingsIcon size={16} />
           <span className="nav-label-text">{t("nav.settings")}</span>
         </button>
-        <div className="sidebar-status">
-          <span className="status-dot" />
-          ENGINE READY
-        </div>
       </div>
     </aside>
   );

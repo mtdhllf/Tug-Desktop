@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { open as openDialog } from "@tauri-apps/plugin-dialog";
 import { useI18n } from "../i18n";
 import { addTask, type TaskView } from "../lib/backend";
@@ -26,6 +26,7 @@ export function AddTaskDialog({
   const [saveDir, setSaveDir] = useState(defaultDir);
   const [fileName, setFileName] = useState("");
   const [connections, setConnections] = useState(defaultConnections);
+  const advancedOptions = useRef<HTMLDetailsElement>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -87,7 +88,8 @@ export function AddTaskDialog({
       setError(t("add.invalidUrl"));
       return;
     }
-    if (!isTorrent && (!Number.isFinite(connections) || connections < 1 || connections > 32)) {
+    if (!isTorrent && (!Number.isInteger(connections) || connections < 1 || connections > 32)) {
+      if (advancedOptions.current) advancedOptions.current.open = true;
       setError(t("add.invalidConnections"));
       return;
     }
@@ -120,7 +122,6 @@ export function AddTaskDialog({
       <div className="modal add-modal" role="dialog" aria-modal="true" aria-labelledby="add-task-title">
         <div className="modal-head">
           <div>
-            <div className="modal-kicker">NEW TASK / 02</div>
             <h2 id="add-task-title">{t("add.title")}</h2>
             <p>{t("add.subtitle")}</p>
           </div>
@@ -132,8 +133,8 @@ export function AddTaskDialog({
         <form id="add-task-form" className="add-layout" onSubmit={submit}>
           <div className="add-main">
             <div className="seg add-tabs">
-              <button type="button" className="active">{pick("链接 / URL", "LINK / URL")}</button>
-              <button type="button" onClick={pickTorrent}>{pick("种子 / TORRENT", "TORRENT")}</button>
+              <button type="button" className="active">{pick("链接", "Link")}</button>
+              <button type="button" onClick={pickTorrent}>{pick("选择种子", "Choose torrent")}</button>
             </div>
 
             <label className="field">
@@ -146,61 +147,45 @@ export function AddTaskDialog({
                 autoFocus
                 spellCheck={false}
               />
-              <div className="hint">{pick("支持 HTTP/HTTPS、magnet:?xt=...，也可直接选择 .torrent。", "Supports HTTP/HTTPS, magnet:?xt=..., or pick a .torrent file directly.")}</div>
             </label>
 
-            <div className="field-row">
-              <label className="field">
-                <span>{t("add.saveDir")}</span>
-                <div className="input-with-button">
-                  <input value={saveDir} onChange={(event) => setSaveDir(event.currentTarget.value)} spellCheck={false} />
-                  <button type="button" className="btn btn-sm" onClick={pickDirectory}><FolderIcon size={12} /> {t("add.browse")}</button>
-                </div>
-              </label>
-              <label className="field">
-                <span>{t("add.fileName")}</span>
-                <input value={fileName} onChange={(event) => setFileName(event.currentTarget.value)} placeholder={t("add.fileNamePlaceholder")} spellCheck={false} disabled={isTorrent} />
-              </label>
-            </div>
-
+            <label className="field">
+              <span>{t("add.saveDir")}</span>
+              <div className="input-with-button">
+                <input value={saveDir} onChange={(event) => setSaveDir(event.currentTarget.value)} spellCheck={false} />
+                <button type="button" className="btn btn-sm" onClick={pickDirectory}><FolderIcon size={12} /> {t("add.browse")}</button>
+              </div>
+            </label>
             {isTorrent ? (
               <div className="form-note"><FileIcon size={13} /> {t("add.torrentHint")}</div>
             ) : (
-              <div className="field-row">
-                <label className="field">
-                  <span>{t("add.connections")}</span>
-                  <div className="input-unit">
-                    <input type="number" min={1} max={32} value={connections} onChange={(event) => setConnections(Number(event.currentTarget.value))} />
-                    <span>CONN</span>
-                  </div>
-                </label>
-                <div className="form-note vertical">{pick("高级选项（代理、Header、Cookie、SHA-256）将在 M4 开放。", "Advanced options (proxy, headers, cookies, SHA-256) arrive in M4.")}</div>
-              </div>
+              <details className="advanced-download" ref={advancedOptions}>
+                <summary>{pick("高级选项", "Advanced options")}</summary>
+                <div className="field-row">
+                  <label className="field"><span>{t("add.fileName")}</span><input value={fileName} onChange={(event) => setFileName(event.currentTarget.value)} placeholder={t("add.fileNamePlaceholder")} spellCheck={false} /></label>
+                  <label className="field"><span>{t("add.connections")}</span><div className="input-unit"><input type="number" min={1} max={32} step={1} onInvalid={() => { if (advancedOptions.current) advancedOptions.current.open = true; }} value={connections} onChange={(event) => setConnections(Number(event.currentTarget.value))} /><span>{pick("个", "connections")}</span></div></label>
+                </div>
+              </details>
             )}
 
             {error && <div className="form-error">{error}</div>}
           </div>
 
           <aside className="add-side">
-            <div className="tip">
-              <div className="tip-kicker">BT / MAGNET</div>
-              <p>{pick("磁力与种子任务会先获取元数据，然后自动开始下载；文件选择可在任务详情中调整。", "Magnet and torrent tasks fetch metadata first, then start downloading automatically; file selection can be adjusted in the task details.")}</p>
-            </div>
+            {isTorrent && <div className="tip">
+              <div className="tip-kicker">BitTorrent</div>
+              <p>{pick("可在任务详情中选择要下载的文件。", "Choose which files to download in task details.")}</p>
+            </div>}
             <div className="summary">
               <div className="summary-row"><span>{pick("类型", "Type")}</span><b>{isTorrent ? "BitTorrent" : "HTTP"}</b></div>
               <div className="summary-row"><span>{pick("连接数", "Connections")}</span><b>{isTorrent ? pick("自动", "Auto") : connections}</b></div>
               <div className="summary-row"><span>{pick("保存到", "Save to")}</span><b title={saveDir}>{saveDir || "—"}</b></div>
-              <div className="summary-row"><span>{pick("校验", "Verification")}</span><b>{pick("完成后可选", "Optional after completion")}</b></div>
-            </div>
-            <div className="tip">
-              <div className="tip-kicker">DROP ZONE</div>
-              <p>{pick("也可以把 .torrent、磁力或链接拖进主窗口，直接加入队列。", "You can also drag a .torrent, magnet link, or URL into the main window to add it to the queue.")}</p>
             </div>
           </aside>
         </form>
 
         <div className="modal-foot">
-          <span className="mono faint">{pick("ESC 取消 · ENTER 开始", "ESC CANCEL · ENTER START")}</span>
+          <span className="mono faint">{pick("Esc 取消 · Enter 开始下载", "Esc to cancel · Enter to download")}</span>
           <span className="toolbar-spacer" />
           <button type="button" className="btn" onClick={onClose}>{t("add.cancel")}</button>
           <button type="submit" form="add-task-form" className="btn btn-primary" disabled={busy}>

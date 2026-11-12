@@ -40,13 +40,12 @@ export function RemoveTaskDialog({ task, onClose, onConfirm }: RemoveTaskDialogP
       <div className="modal remove-modal" role="dialog" aria-modal="true">
         <div className="modal-head">
           <div>
-            <div className="modal-kicker">DELETE TASK / CONFIRM</div>
             <h2>{t("task.removeTitle")}</h2>
           </div>
           <button type="button" className="icon-btn" onClick={onClose} aria-label={t("add.cancel")}>×</button>
         </div>
         <div className="modal-body">
-          <div className="warning-strip">{pick("正在下载的任务删除后会丢弃当前分片进度；重新添加时需要从头开始。", "Deleting a downloading task discards its current piece progress; re-adding it starts over from the beginning.")}</div>
+          <div className="warning-strip">{pick("删除后将无法在此继续任务。默认保留已下载的文件。", "The task can no longer be resumed here. Downloaded files are kept by default.")}</div>
           <div className="remove-file">
             <span className="file-chip bt"><FileIcon size={16} /></span>
             <div>
@@ -56,7 +55,7 @@ export function RemoveTaskDialog({ task, onClose, onConfirm }: RemoveTaskDialogP
           </div>
           <label className="check-row remove-check">
             <input type="checkbox" checked={deleteFiles} onChange={(event) => setDeleteFiles(event.currentTarget.checked)} />
-            <span><b>{t("task.deleteFiles")}</b><em>{pick("将删除 .part、分片数据与任务元数据；不可恢复。", "Deletes .part files, piece data, and task metadata; this cannot be undone.")}</em></span>
+            <span><b>{t("task.deleteFiles")}</b><em>{pick("文件也会从磁盘删除，无法撤销。", "Also remove the files from disk. This cannot be undone.")}</em></span>
           </label>
         </div>
         <div className="modal-foot">

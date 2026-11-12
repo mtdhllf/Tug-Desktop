@@ -44,11 +44,11 @@ For more versions, see [GitHub Releases](https://github.com/mtdhllf/Tug-Desktop/
 
 | Overview | All Tasks |
 |---|---|
-| ![Overview](public/screenshots/en/overview.png) | ![All Tasks](public/screenshots/en/tasks.png) |
+| ![Overview](public/screenshots/en/overview.jpg) | ![All Tasks](public/screenshots/en/tasks.jpg) |
 
 | Settings | New Download |
 |---|---|
-| ![Settings](public/screenshots/en/settings.png) | ![New Download](public/screenshots/en/add.png) |
+| ![Settings](public/screenshots/en/settings.jpg) | ![New Download](public/screenshots/en/add.jpg) |
 
 ## Features
 
@@ -57,6 +57,7 @@ For more versions, see [GitHub Releases](https://github.com/mtdhllf/Tug-Desktop/
 - HTTP/HTTPS downloads with multi-connection segmented acceleration
 - Resume support with `.part` temporary files
 - Download rate limit (MB/s), connection count, and concurrent task count
+- A focused New Download dialog with optional file name and connection settings under Advanced options
 - System proxy toggle, with direct connection or system proxy
 - Optional SHA-256 verification
 - Redirects, timeouts, retries, and error states
@@ -72,10 +73,11 @@ For more versions, see [GitHub Releases](https://github.com/mtdhllf/Tug-Desktop/
 
 ### Task Management
 
-- Overview, All Tasks, Downloading, Completed
-- The Downloading list includes: Downloading, Queued, Paused, Failed
+- Overview, All Tasks, Unfinished, Completed
+- Unfinished includes downloading, queued, paused, and failed tasks; Overview prioritizes running downloads
 - Retry failed tasks directly
 - Search, status filter, sorting, multi-select
+- Per-task batch results with failed-only retries; deleting again requires a new confirmation
 - Pause, resume, and delete tasks
 - Optionally delete downloaded files along with the task
 - Tasks persisted to SQLite

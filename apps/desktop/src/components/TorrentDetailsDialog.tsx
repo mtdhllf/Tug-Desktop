@@ -112,7 +112,7 @@ export function TorrentDetailsDialog({ task, onClose }: TorrentDetailsDialogProp
       <div className="modal detail-modal" role="dialog" aria-modal="true" aria-labelledby="torrent-details-title">
         <div className="detail-head">
           <div>
-            <div className="modal-kicker">TASK DETAIL / BT</div>
+            <div className="modal-kicker">{t("bt.detailsTitle")}</div>
             <h2 id="torrent-details-title">{task.name}</h2>
           </div>
           <button type="button" className="icon-btn" onClick={onClose} aria-label={t("bt.close")}><CloseIcon size={14} /></button>
@@ -125,10 +125,10 @@ export function TorrentDetailsDialog({ task, onClose }: TorrentDetailsDialogProp
             <span>{task.kind} · {task.peers} peers · {task.saveDir}</span>
           </div>
           <div className="detail-kpis">
-            <div><span>PROGRESS</span><b>{percent === null ? "--" : `${percent.toFixed(1)}%`}</b></div>
-            <div><span>SPEED</span><b>{formatBytes(task.speedBps)}/s</b></div>
-            <div><span>ETA</span><b>{formatDuration(task.etaSecs)}</b></div>
-            <div><span>RATIO</span><b>{task.downloaded > 0 ? (task.uploaded / task.downloaded).toFixed(2) : "—"}</b></div>
+            <div><span>{pick("进度", "Progress")}</span><b>{percent === null ? "--" : `${percent.toFixed(1)}%`}</b></div>
+            <div><span>{pick("下载速度", "Download speed")}</span><b>{formatBytes(task.speedBps)}/s</b></div>
+            <div><span>{pick("剩余时间", "Time left")}</span><b>{formatDuration(task.etaSecs)}</b></div>
+            <div><span>{pick("分享率", "Share ratio")}</span><b>{task.downloaded > 0 ? (task.uploaded / task.downloaded).toFixed(2) : "—"}</b></div>
           </div>
         </div>
 
@@ -160,9 +160,9 @@ export function TorrentDetailsDialog({ task, onClose }: TorrentDetailsDialogProp
                       <div className="cell-task-text"><div className="cell-name">{file.path}</div><div className="cell-sub">#{file.index}</div></div>
                     </div>
                     <span className="cell-strong">{formatBytes(file.length)}</span>
-                    <span className="cell-sub">{file.selected ? "100%" : "0%"}</span>
+                    <span className="cell-sub">{completed && file.selected ? "100%" : "—"}</span>
                     <span className="priority">{file.selected ? pick("普通", "Normal") : pick("跳过", "Skip")}</span>
-                    <span className={`state-tag ${file.selected ? "completed" : "queued"}`}>{file.selected ? "DONE" : "WAIT"}</span>
+                    <span className={`state-tag ${file.selected ? "completed" : "queued"}`}>{file.selected ? (completed ? t("task.completed") : pick("已选择", "Selected")) : pick("已跳过", "Skipped")}</span>
                   </div>
                 ))}
               </div>
@@ -193,7 +193,7 @@ export function TorrentDetailsDialog({ task, onClose }: TorrentDetailsDialogProp
                   <span className="state-tag queued">{pick("已配置", "Configured")}</span>
                 </div>
               ))}
-              <div className="form-note">{pick("Tracker 状态由引擎运行时提供；超时会在下次 announce 自动重试。", "Tracker status comes from the engine runtime; timeouts retry automatically on the next announce.")}</div>
+              <div className="form-note">{pick("显示此任务配置的 Tracker 地址。", "Tracker addresses configured for this task.")}</div>
             </div>
           )}
         </div>

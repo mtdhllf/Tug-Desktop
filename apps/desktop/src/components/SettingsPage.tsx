@@ -102,6 +102,7 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
   }
 
   const editable = tab !== "about";
+  const dirty = JSON.stringify(draft) !== JSON.stringify(settings);
 
   return (
     <div className="settings-page">
@@ -109,7 +110,6 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
 
       <form className="settings-layout" onSubmit={save}>
         <nav className="subnav">
-          <div className="nav-label">SETTINGS</div>
           {TABS.map((item) => (
             <button
               key={item.id}
@@ -117,7 +117,6 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
               className={`subnav-item ${tab === item.id ? "active" : ""}`}
               onClick={() => onTab(item.id)}
             >
-              <span className="subnav-num">{item.num}</span>
               <span>{t(item.label)}</span>
               {tab === item.id && <ChevronDownIcon size={11} />}
             </button>
@@ -128,7 +127,7 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
           {tab === "download" && (
             <>
               <section className="form-card">
-                <div className="form-card-head"><h3>{t("settings.section.location")}</h3><span>DOWNLOADS</span></div>
+                <div className="form-card-head"><h3>{t("settings.section.location")}</h3></div>
                 <div className="form-card-body">
                   <label className="field"><span>{t("settings.downloadDir")}</span>
                     <div className="input-with-button">
@@ -136,19 +135,19 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
                       <button type="button" className="btn btn-sm" onClick={pickDirectory}><FolderIcon size={12} /> {t("add.browse")}</button>
                     </div>
                   </label>
-                  <div className="form-note">{pick("任务默认保存到此目录；单任务可在新建时覆盖。", "New tasks are saved here by default; each task can override this when created.")}</div>
+                  <div className="form-note">{pick("新建下载时可以另选位置。", "Choose a different folder when adding a download.")}</div>
                 </div>
               </section>
 
               <section className="form-card">
-                <div className="form-card-head"><h3>{t("settings.section.connections")}</h3><span>PERFORMANCE</span></div>
+                <div className="form-card-head"><h3>{t("settings.section.connections")}</h3></div>
                 <div className="form-card-body">
                   <div className="field-row">
                     <label className="field"><span>{t("settings.connections")}</span>
-                      <div className="input-unit"><input type="number" min={1} max={32} value={draft.connectionsPerTask} onChange={(e) => patch("connectionsPerTask", Number(e.currentTarget.value))} /><span>CONN</span></div>
+                      <div className="input-unit"><input type="number" min={1} max={32} value={draft.connectionsPerTask} onChange={(e) => patch("connectionsPerTask", Number(e.currentTarget.value))} /><span>{pick("个", "connections")}</span></div>
                     </label>
                     <label className="field"><span>{t("settings.concurrent")}</span>
-                      <div className="input-unit"><input type="number" min={1} max={16} value={draft.maxConcurrentTasks} onChange={(e) => patch("maxConcurrentTasks", Number(e.currentTarget.value))} /><span>TASKS</span></div>
+                      <div className="input-unit"><input type="number" min={1} max={16} value={draft.maxConcurrentTasks} onChange={(e) => patch("maxConcurrentTasks", Number(e.currentTarget.value))} /><span>{pick("个", "tasks")}</span></div>
                     </label>
                   </div>
                   <div className="form-note">{pick("系统代理、全局限速在「网络」页设置。", "Configure the system proxy and global speed limits on the Network page.")}</div>
@@ -160,7 +159,7 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
           {tab === "network" && (
             <>
               <section className="form-card">
-                <div className="form-card-head"><h3>{t("settings.section.network")}</h3><span>NETWORK</span></div>
+                <div className="form-card-head"><h3>{t("settings.section.network")}</h3></div>
                 <div className="form-card-body">
                   <label className="check-row">
                     <input type="checkbox" checked={draft.useSystemProxy} onChange={(e) => patch("useSystemProxy", e.currentTarget.checked)} />
@@ -180,7 +179,7 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
                     </div>
                     <div className="hint">{t("settings.globalLimitHint")}</div>
                   </label>
-                  <div className="form-note">{pick("设置对之后开始的任务生效；运行中的任务不会被强制重连。", "Changes apply to tasks started afterwards; running tasks are not force-reconnected.")}</div>
+                  <div className="form-note">{pick("代理和下载限速对之后开始的任务生效。", "Proxy and download limits apply to tasks started afterwards.")}</div>
                 </div>
               </section>
             </>
@@ -189,12 +188,12 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
           {tab === "bt" && (
             <>
               <section className="form-card">
-                <div className="form-card-head"><h3>{t("settings.section.bt")}</h3><span>BIT TORRENT</span></div>
+                <div className="form-card-head"><h3>{t("settings.section.bt")}</h3></div>
                 <div className="form-card-body">
                   <label className="check-row"><input type="checkbox" checked={draft.btDht} onChange={(e) => patch("btDht", e.currentTarget.checked)} /><span><b>{t("settings.btDht")}</b><em>{t("settings.btDhtHint")}</em></span></label>
                   <div className="field-row">
                     <label className="field"><span>{t("settings.btPort")}</span>
-                      <div className="input-unit"><input type="number" min={1} max={65535} value={draft.btListenPort ?? ""} onChange={(e) => patch("btListenPort", num(e.currentTarget.value))} placeholder={pick("随机", "Random")} /><span>PORT</span></div>
+                      <div className="input-unit"><input type="number" min={1} max={65535} value={draft.btListenPort ?? ""} onChange={(e) => patch("btListenPort", num(e.currentTarget.value))} placeholder={pick("随机", "Random")} /></div>
                     </label>
                     <label className="field"><span>{t("settings.btUpload")}</span>
                       <div className="input-unit">
@@ -217,10 +216,9 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
               </section>
 
               <section className="form-card">
-                <div className="form-card-head"><h3>{t("settings.section.seed")}</h3><span>SHARING</span></div>
+                <div className="form-card-head"><h3>{t("settings.section.seed")}</h3></div>
                 <div className="form-card-body">
                   <label className="check-row"><input type="checkbox" checked={draft.btSeedAfterComplete} onChange={(e) => patch("btSeedAfterComplete", e.currentTarget.checked)} /><span><b>{t("settings.btSeedAfter")}</b><em>{t("settings.btSeedAfterHint")}</em></span></label>
-                  <div className="form-note">{pick("开启后会持续向其他用户上传已完成文件；关闭后完成即停止上传。", "When enabled, completed files continue uploading to other peers; when disabled, uploading stops on completion.")}</div>
                 </div>
               </section>
             </>
@@ -229,7 +227,7 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
           {tab === "appearance" && (
             <>
               <section className="form-card">
-                <div className="form-card-head"><h3>{t("settings.section.appearance")}</h3><span>APPEARANCE</span></div>
+                <div className="form-card-head"><h3>{t("settings.section.appearance")}</h3></div>
                 <div className="form-card-body">
                   <div className="theme-options">
                     {(["system", "light", "dark"] as const).map((theme) => (
@@ -262,7 +260,7 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
           {tab === "notify" && (
             <>
               <section className="form-card">
-                <div className="form-card-head"><h3>{t("settings.section.notify")}</h3><span>NOTIFICATIONS</span></div>
+                <div className="form-card-head"><h3>{t("settings.section.notify")}</h3></div>
                 <div className="form-card-body">
                   <div className="check-list">
                     <div className="check-row static"><PaletteIcon size={16} /><span><b>{pick("下载完成通知", "Download notification")}</b><em>{pick("窗口未聚焦时显示 Windows 通知。", "Show a Windows notification when the window is not focused.")}</em></span><span className="pill">{pick("已启用", "Enabled")}</span></div>
@@ -271,7 +269,7 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
                 </div>
               </section>
               <section className="form-card">
-                <div className="form-card-head"><h3>{t("settings.section.tray")}</h3><span>DESKTOP</span></div>
+                <div className="form-card-head"><h3>{t("settings.section.tray")}</h3></div>
                 <div className="form-card-body">
                   <label className="check-row"><input type="checkbox" checked={draft.closeToTray} onChange={(e) => patch("closeToTray", e.currentTarget.checked)} /><span><b>{t("settings.closeToTray")}</b><em>{t("settings.closeToTrayHint")}</em></span></label>
                   <div className="form-note"><ShieldIcon size={13} /> {pick("单实例与托盘由桌面壳管理。", "Single-instance and tray behavior are managed by the desktop shell.")}</div>
@@ -283,7 +281,7 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
           {tab === "about" && (
             <>
               <section className="form-card">
-                <div className="form-card-head"><h3>{t("settings.section.about")}</h3><span>ABOUT</span></div>
+                <div className="form-card-head"><h3>{t("settings.section.about")}</h3></div>
                 <div className="form-card-body">
                   <div className="about-grid">
                     <div><span>{t("settings.about.version")}</span><b>{info?.version ?? "1.0.0"}</b></div>
@@ -293,7 +291,7 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
                 </div>
               </section>
               <section className="form-card">
-                <div className="form-card-head"><h3>{t("settings.section.paths")}</h3><span>PATHS</span></div>
+                <div className="form-card-head"><h3>{t("settings.section.paths")}</h3></div>
                 <div className="form-card-body">
                   <div className="path-row"><span>{t("settings.about.config")}</span><code>{info?.configDir ?? "%APPDATA%\\Tug"}</code></div>
                   <div className="path-row"><span>{t("settings.about.data")}</span><code>{info?.dataDir ?? "%LOCALAPPDATA%\\Tug"}</code></div>
@@ -301,11 +299,9 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
                 </div>
               </section>
               <section className="form-card">
-                <div className="form-card-head"><h3>{t("settings.section.diagnostics")}</h3><span>DIAGNOSTICS</span></div>
+                <div className="form-card-head"><h3>{t("settings.section.diagnostics")}</h3></div>
                 <div className="form-card-body">
-                  <div className="status-row"><span>{pick("后端 IPC", "Backend IPC")}</span><b className="ok"><CheckIcon size={12} /> {t("diag.connected")}</b></div>
-                  <div className="status-row"><span>{pick("SQLite 任务库", "SQLite task store")}</span><b className="ok"><CheckIcon size={12} /> OK</b></div>
-                  <div className="form-note">{pick("日志导出与崩溃报告入口将在 M4 提供。", "Log export and crash reports are planned for M4.")}</div>
+                  <div className="status-row"><span>{t("diag.backend")}</span><b className="ok"><CheckIcon size={12} /> {t("diag.connected")}</b></div>
                 </div>
               </section>
             </>
@@ -315,7 +311,7 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
 
           {editable && (
             <div className="savebar">
-              <span className="savebar-status">{saved ? t("settings.saved") : pick("修改后立即保存", "Saved immediately")}</span>
+              <span className="savebar-status">{saved ? t("settings.saved") : dirty ? pick("有未保存的修改", "Unsaved changes") : pick("没有未保存的修改", "All changes saved")}</span>
               <span className="toolbar-spacer" />
               <button type="button" className="btn" onClick={() => setDraft(settings)}>{t("settings.reset")}</button>
               <button type="submit" className="btn btn-primary" disabled={busy}>{busy ? t("settings.saving") : t("settings.save")}</button>
@@ -325,12 +321,11 @@ export function SettingsPage({ settings, info, tab, onTab, onSaved }: SettingsPa
 
         <aside className="settings-side">
           <div className="info-card">
-            <h3>{pick("当前状态", "Current status")}</h3>
-            <div className="info-row"><span>ENGINE</span><b>READY</b></div>
-            <div className="info-row"><span>DHT</span><b>{draft.btDht ? "CONNECTED" : "DISABLED"}</b></div>
-            <div className="info-row"><span>PORT</span><b>{draft.btListenPort ?? pick("随机", "Random")}</b></div>
-            <div className="info-row"><span>DIR</span><b title={draft.downloadDir}>{draft.downloadDir || "—"}</b></div>
-            <div className="info-note">{pick("设置写入 ", "Settings are written to ")}<b>%APPDATA%\\Tug\\settings.json</b>{pick("；BT 端口/DHT 修改需要重启应用。", "; BT port/DHT changes require an app restart.")}</div>
+            <h3>{pick("设置预览", "Settings preview")}</h3>
+            <div className="info-row"><span>DHT</span><b>{draft.btDht ? pick("已启用", "Enabled") : pick("未启用", "Disabled")}</b></div>
+            <div className="info-row"><span>{t("settings.btPort")}</span><b>{draft.btListenPort ?? pick("随机", "Random")}</b></div>
+            <div className="info-row"><span>{pick("保存位置", "Save to")}</span><b title={draft.downloadDir}>{draft.downloadDir || "—"}</b></div>
+            <div className="info-note">{pick("修改后点击保存。", "Click Save to apply changes.")}</div>
           </div>
         </aside>
       </form>
