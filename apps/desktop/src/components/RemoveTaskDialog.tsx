@@ -11,7 +11,7 @@ interface RemoveTaskDialogProps {
 }
 
 export function RemoveTaskDialog({ task, onClose, onConfirm }: RemoveTaskDialogProps) {
-  const { t, pick } = useI18n();
+  const { t } = useI18n();
   const [deleteFiles, setDeleteFiles] = useState(false);
   const [busy, setBusy] = useState(false);
   const percent = percentOf(task);
@@ -45,7 +45,7 @@ export function RemoveTaskDialog({ task, onClose, onConfirm }: RemoveTaskDialogP
           <button type="button" className="icon-btn" onClick={onClose} aria-label={t("add.cancel")}>×</button>
         </div>
         <div className="modal-body">
-          <div className="warning-strip">{pick("删除后将无法在此继续任务。默认保留已下载的文件。", "The task can no longer be resumed here. Downloaded files are kept by default.")}</div>
+          <div className="warning-strip">{t("task.removeHint")}</div>
           <div className="remove-file">
             <span className="file-chip bt"><FileIcon size={16} /></span>
             <div>
@@ -55,11 +55,11 @@ export function RemoveTaskDialog({ task, onClose, onConfirm }: RemoveTaskDialogP
           </div>
           <label className="check-row remove-check">
             <input type="checkbox" checked={deleteFiles} onChange={(event) => setDeleteFiles(event.currentTarget.checked)} />
-            <span><b>{t("task.deleteFiles")}</b><em>{pick("文件也会从磁盘删除，无法撤销。", "Also remove the files from disk. This cannot be undone.")}</em></span>
+            <span><b>{t("task.deleteFiles")}</b><em>{t("task.deleteFilesHint")}</em></span>
           </label>
         </div>
         <div className="modal-foot">
-          <span className="mono faint">{pick("只删除任务不会删除磁盘文件", "Deleting the task will not delete files on disk")}</span>
+          <span className="mono faint">{t("task.keepFiles")}</span>
           <span className="toolbar-spacer" />
           <button type="button" className="btn" onClick={onClose}>{t("add.cancel")}</button>
           <button type="button" className="btn btn-danger" onClick={confirm} disabled={busy}>

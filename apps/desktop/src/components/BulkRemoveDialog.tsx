@@ -12,7 +12,7 @@ interface BulkRemoveDialogProps {
 
 /** 多选删除确认。与单任务删除一致，只有确认后才真正删除。 */
 export function BulkRemoveDialog({ tasks, onClose, onConfirm }: BulkRemoveDialogProps) {
-  const { t, pick } = useI18n();
+  const { t } = useI18n();
   const [deleteFiles, setDeleteFiles] = useState(false);
   const [busy, setBusy] = useState(false);
   const running = useRef(false);
@@ -57,16 +57,16 @@ export function BulkRemoveDialog({ tasks, onClose, onConfirm }: BulkRemoveDialog
             <span className="file-chip"><FileIcon size={16} /></span>
             <div>
               <b>{t("tasks.bulk.removeMessage", { count: tasks.length })}</b>
-              <span>{preview.map((task) => task.name).join(pick("、", ", "))}{tasks.length > preview.length ? pick(` 等 ${tasks.length} 个任务`, ` and ${tasks.length - preview.length} more`) : ""} · {formatBytes(total)}</span>
+              <span>{preview.map((task) => task.name).join(t("common.listSeparator"))}{tasks.length > preview.length ? ` · ${t("tasks.more", { count: tasks.length - preview.length })}` : ""} · {formatBytes(total)}</span>
             </div>
           </div>
           <label className="check-row remove-check">
             <input type="checkbox" disabled={busy} checked={deleteFiles} onChange={(event) => setDeleteFiles(event.currentTarget.checked)} />
-            <span><b>{t("task.deleteFiles")}</b><em>{pick("文件也会从磁盘删除，无法撤销。", "Also remove files from disk. This cannot be undone.")}</em></span>
+            <span><b>{t("task.deleteFiles")}</b><em>{t("task.deleteFilesHint")}</em></span>
           </label>
         </div>
         <div className="modal-foot">
-          <span className="mono faint">{pick("只删除任务不会删除磁盘文件", "Deleting the tasks will not delete files on disk")}</span>
+          <span className="mono faint">{t("tasks.bulk.keepFiles")}</span>
           <span className="toolbar-spacer" />
           <button type="button" className="btn" disabled={busy} onClick={onClose}>{t("add.cancel")}</button>
           <button type="button" className="btn btn-danger" onClick={confirm} disabled={busy}>

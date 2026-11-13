@@ -90,7 +90,8 @@ For more versions, see [GitHub Releases](https://github.com/mtdhllf/Tug-Desktop/
 - Clipboard link/torrent detection (can be disabled)
 - Drop a `.torrent` file to create a new task directly
 - Light / dark / follow system theme
-- Chinese UI
+- Simplified Chinese, Traditional Chinese, English, Korean, and Japanese UI
+- Language dropdown: system matching on first use, English fallback, and remembered manual preferences
 - Native title bar color follows the theme
 
 ### Settings

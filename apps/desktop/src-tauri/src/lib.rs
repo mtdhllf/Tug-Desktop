@@ -1,6 +1,8 @@
 use std::sync::{Arc, RwLock};
 
+mod i18n;
 mod notifications;
+use i18n::native_copy;
 
 use serde::Serialize;
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem};
@@ -14,6 +16,7 @@ use tug_service::{AddTaskInput, TaskEvent, TaskManager, TorrentFileInfo, Torrent
 struct AppState {
     paths: AppPaths,
     settings: Arc<RwLock<Settings>>,
+    ui_locale: RwLock<String>,
     manager: Arc<TaskManager>,
 }
 
@@ -284,33 +287,36 @@ fn send_notification(handle: &AppHandle, app_id: &str, title: &str, body: &str) 
     }
 }
 
-struct TrayLabels {
-    show: &'static str,
-    pause: &'static str,
-    resume: &'static str,
-    quit: &'static str,
-}
-
-fn tray_labels(locale: &str) -> TrayLabels {
-    if locale == "en-US" {
-        TrayLabels {
-            show: "Show window",
-            pause: "Pause all",
-            resume: "Resume all",
-            quit: "Quit",
-        }
-    } else {
-        TrayLabels {
-            show: "显示主窗口",
-            pause: "暂停全部",
-            resume: "继续全部",
-            quit: "退出",
-        }
+/// Apply the frontend's resolved language without persisting an automatic match.
+#[tauri::command]
+fn set_ui_locale(app: AppHandle, state: State<'_, AppState>, locale: String) -> Result<(), String> {
+    if !matches!(
+        locale.as_str(),
+        "zh-CN" | "zh-TW" | "en-US" | "ja-JP" | "ko-KR"
+    ) {
+        return Err("Unsupported language".into());
     }
+    let labels = native_copy(&locale);
+    if let Some(tray) = app.tray_by_id("main") {
+        let show = MenuItem::with_id(&app, "show", labels.show, true, None::<&str>)
+            .map_err(|e| e.to_string())?;
+        let pause = MenuItem::with_id(&app, "pause_all", labels.pause, true, None::<&str>)
+            .map_err(|e| e.to_string())?;
+        let resume = MenuItem::with_id(&app, "resume_all", labels.resume, true, None::<&str>)
+            .map_err(|e| e.to_string())?;
+        let quit = MenuItem::with_id(&app, "quit", labels.quit, true, None::<&str>)
+            .map_err(|e| e.to_string())?;
+        let separator = PredefinedMenuItem::separator(&app).map_err(|e| e.to_string())?;
+        let menu = Menu::with_items(&app, &[&show, &pause, &resume, &separator, &quit])
+            .map_err(|e| e.to_string())?;
+        tray.set_menu(Some(menu)).map_err(|e| e.to_string())?;
+    }
+    *state.ui_locale.write().map_err(|e| e.to_string())? = locale;
+    Ok(())
 }
 
 fn setup_tray(app: &mut tauri::App, locale: &str) -> tauri::Result<()> {
-    let labels = tray_labels(locale);
+    let labels = native_copy(locale);
     let show = MenuItem::with_id(app, "show", labels.show, true, None::<&str>)?;
     let pause = MenuItem::with_id(app, "pause_all", labels.pause, true, None::<&str>)?;
     let resume = MenuItem::with_id(app, "resume_all", labels.resume, true, None::<&str>)?;
@@ -318,7 +324,7 @@ fn setup_tray(app: &mut tauri::App, locale: &str) -> tauri::Result<()> {
     let separator = PredefinedMenuItem::separator(app)?;
     let menu = Menu::with_items(app, &[&show, &pause, &resume, &separator, &quit])?;
 
-    let mut builder = TrayIconBuilder::new()
+    let mut builder = TrayIconBuilder::with_id("main")
         .menu(&menu)
         .show_menu_on_left_click(false)
         .on_menu_event(|app, event| match event.id.as_ref() {
@@ -397,6 +403,7 @@ pub fn run() {
         .plugin(tauri_plugin_clipboard_manager::init())
         .manage(AppState {
             paths,
+            ui_locale: RwLock::new("en-US".into()),
             settings,
             manager,
         })
@@ -406,7 +413,7 @@ pub fn run() {
                 .settings
                 .read()
                 .map(|settings| settings.locale.clone())
-                .unwrap_or_else(|_| "zh-CN".to_owned());
+                .unwrap_or_else(|_| "en-US".to_owned());
             setup_tray(app, &locale)?;
 
             let handle = app.handle().clone();
@@ -422,10 +429,17 @@ pub fn run() {
                             .and_then(|window| window.is_focused().ok())
                             .unwrap_or(false);
                         if !focused {
+                            let locale = handle
+                                .state::<AppState>()
+                                .ui_locale
+                                .read()
+                                .map(|s| s.clone())
+                                .unwrap_or_else(|_| "en-US".into());
+                            let labels = native_copy(&locale);
                             let title = if task.state == TaskState::Completed {
-                                "下载完成"
+                                labels.completed
                             } else {
-                                "下载失败"
+                                labels.failed
                             };
                             tracing::info!(task = %task.name, title, "发送系统通知");
                             send_notification(&handle, &notification_app_id, title, &task.name);
@@ -467,6 +481,7 @@ pub fn run() {
             clipboard_files,
             app_info,
             get_settings,
+            set_ui_locale,
             update_settings,
             list_tasks,
             add_task,

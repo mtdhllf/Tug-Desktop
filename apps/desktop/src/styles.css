@@ -636,3 +636,7 @@ svg { display: block; flex: none; }
 }
 /* Secondary controls and batch feedback stay quiet until needed. */
 .advanced-download{border-top:1px solid var(--line-soft);padding-top:12px}.advanced-download summary{cursor:pointer;color:var(--sub);font-size:12px;padding:4px 0}.advanced-download[open] summary{margin-bottom:12px}.bulk-feedback{margin-bottom:14px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--surface)}.bulk-feedback.has-failures{border-color:var(--red-line)}.bulk-feedback-head{display:flex;align-items:center;gap:10px;font-size:12px}.bulk-feedback details{font-size:12px;margin-top:10px}.bulk-feedback summary{cursor:pointer;color:var(--sub)}.bulk-feedback ul{margin:10px 0 0;padding-left:18px;max-height:180px;overflow:auto}.bulk-feedback li{padding:4px 0}.bulk-feedback li span{display:block;color:var(--sub);overflow-wrap:anywhere}.bulk-progress{padding:10px 14px;margin-bottom:12px;color:var(--sub);font-size:12px}.btn:disabled,.chip:disabled{cursor:default;opacity:.5}
+
+.language-field{margin-top:18px}.language-field select{width:min(100%,280px);min-height:36px;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);font:inherit}.language-field select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.language-field .hint{max-width:100%;white-space:normal;overflow-wrap:anywhere;font-weight:400;line-height:1.6}.topbar>.btn{flex-shrink:0}.topbar .page-title{flex:0 1 auto;overflow:hidden}.brand-tagline{overflow-wrap:anywhere}

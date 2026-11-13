@@ -41,7 +41,7 @@ pub struct Settings {
     pub close_to_tray: bool,
     /// 界面主题。
     pub theme: Theme,
-    /// 界面语言；当前仅 `zh-CN`，预留 `en-US`。
+    /// 界面语言；system 表示由前端按系统匹配，另支持五种明确语言。
     pub locale: String,
     /// 是否启用 DHT。
     pub bt_dht: bool,
@@ -67,7 +67,7 @@ impl Default for Settings {
             clipboard_watch: false,
             close_to_tray: true,
             theme: Theme::System,
-            locale: "zh-CN".to_owned(),
+            locale: "system".to_owned(),
             bt_dht: true,
             bt_listen_port: None,
             bt_upnp: true,
@@ -134,8 +134,11 @@ impl Settings {
                 self.proxy = None;
             }
         }
-        if !matches!(self.locale.as_str(), "zh-CN" | "en-US") {
-            self.locale = "zh-CN".to_owned();
+        if !matches!(
+            self.locale.as_str(),
+            "system" | "zh-CN" | "zh-TW" | "en-US" | "ja-JP" | "ko-KR"
+        ) {
+            self.locale = "system".to_owned();
         }
         if self.bt_listen_port == Some(0) {
             self.bt_listen_port = None;
@@ -170,7 +173,7 @@ mod tests {
         let settings = Settings::load(&paths).expect("load settings");
 
         assert_eq!(settings.connections_per_task, 8);
-        assert_eq!(settings.locale, "zh-CN");
+        assert_eq!(settings.locale, "system");
         assert!(settings.bt_dht, "DHT should default to enabled");
         assert!(settings.bt_upnp, "UPnP should default to enabled");
         assert!(
@@ -235,6 +238,18 @@ mod tests {
 
         assert_eq!(settings.connections_per_task, 1);
         assert_eq!(settings.max_concurrent_tasks, 16);
-        assert_eq!(settings.locale, "zh-CN");
+        assert_eq!(settings.locale, "system");
+    }
+
+    #[test]
+    fn normalize_preserves_supported_languages() {
+        for locale in ["system", "zh-CN", "zh-TW", "en-US", "ja-JP", "ko-KR"] {
+            let mut settings = Settings {
+                locale: locale.to_owned(),
+                ..Settings::default()
+            };
+            settings.normalize();
+            assert_eq!(settings.locale, locale);
+        }
     }
 }

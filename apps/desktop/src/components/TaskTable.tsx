@@ -50,7 +50,7 @@ export function TaskTable({
   onOpen,
   onReveal,
 }: TaskTableProps) {
-  const { t, pick } = useI18n();
+  const { t } = useI18n();
   const allSelected = tasks.length > 0 && tasks.every((task) => selected.has(task.id));
 
   return (
@@ -59,19 +59,19 @@ export function TaskTable({
         <button
           type="button"
           className="checkbox"
-          aria-label="select all"
+          aria-label={t("bt.selectAll")}
           data-checked={allSelected}
           onClick={onToggleAll}
         >
           {allSelected ? "✓" : ""}
         </button>
-        <span>{pick("任务", "Task")}</span>
-        <span>{pick("状态", "Status")}</span>
-        <span>{pick("进度", "Progress")}</span>
-        <span>{pick("大小", "Size")}</span>
-        <span>{pick("速度", "Speed")}</span>
+        <span>{t("common.task")}</span>
+        <span>{t("common.status")}</span>
+        <span>{t("common.progress")}</span>
+        <span>{t("common.size")}</span>
+        <span>{t("common.speed")}</span>
         <span>PEER</span>
-        <span>{pick("操作", "Actions")}</span>
+        <span>{t("common.actions")}</span>
       </div>
       {tasks.map((task) => {
         const percent = percentOf(task);
@@ -84,7 +84,7 @@ export function TaskTable({
             <button
               type="button"
               className="checkbox"
-              aria-label={`select ${task.name}`}
+              aria-label={t("tasks.select", { name: task.name })}
               data-checked={checked}
               onClick={() => onToggle(task.id)}
             >
@@ -118,12 +118,12 @@ export function TaskTable({
                 {active ? `${formatBytes(task.speedBps)}/s` : "—"}
               </div>
               <div className="cell-sub">
-                {active ? `ETA ${formatDuration(task.etaSecs)}` : ""}
+                {active ? t("task.etaShort", { eta: formatDuration(task.etaSecs) }) : ""}
               </div>
             </div>
             <div>
               <div className="cell-strong">{task.kind === "torrent" ? task.peers : "—"}</div>
-              <div className="cell-sub">{task.kind === "torrent" ? "peers" : ""}</div>
+              <div className="cell-sub">{task.kind === "torrent" ? t("bt.peers") : ""}</div>
             </div>
             <div className="row-actions">
               {task.kind === "torrent" && (

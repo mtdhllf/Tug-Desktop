@@ -63,7 +63,7 @@ function sortTasks(tasks: TaskView[]): TaskView[] {
 }
 
 function App() {
-  const { t, pick } = useI18n();
+  const { t } = useI18n();
   const [view, setView] = useState<View>("overview");
   const [tasks, setTasks] = useState<TaskView[]>([]);
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -429,13 +429,10 @@ function App() {
 
   const pageSubtitle =
     view === "overview"
-      ? pick(
-          `${counts.active} 个未完成 · ${counts.completed} 个已完成`,
-          `${counts.active} unfinished · ${counts.completed} completed`,
-        )
+      ? t("overview.summary", { unfinished: counts.active, completed: counts.completed })
       : view === "settings"
-        ? pick("下载、网络、BitTorrent 与外观", "Downloads, network, BitTorrent, and appearance")
-        : pick(`${visibleTasks.length} 个任务`, `${visibleTasks.length} ${visibleTasks.length === 1 ? "task" : "tasks"}`);
+        ? t("settings.summary")
+        : t("tasks.count", { count: visibleTasks.length });
 
   const statusText = error ? t("status.offline") : loading ? t("diag.checking") : t("status.ready");
 
@@ -477,25 +474,25 @@ function App() {
           }}
         >
           {bulkResult && <BulkFeedback result={bulkResult} busy={bulkBusy} onRetry={() => void retryBulk()} onDismiss={() => setBulkResult(null)} />}
-          {bulkBusy && <div className="bulk-progress" role="status">{pick("正在处理所选任务…", "Processing selected tasks…")}</div>}
+          {bulkBusy && <div className="bulk-progress" role="status">{t("bulk.processing")}</div>}
           {error && !info ? (
             <div className="error-state">
               <div className="error-panel">
                 <div className="error-panel-icon"><DownloadIcon size={20} /></div>
                 <div>
-                  <h2>{pick("连接不到下载引擎。", "Cannot reach the download engine.")}</h2>
-                  <p>{pick("请稍后重试。如果仍无法连接，请重新打开 Tug。", "Try again in a moment. If the problem persists, restart Tug.")}</p>
+                  <h2>{t("error.engineUnavailable")}</h2>
+                  <p>{t("error.engineRecovery")}</p>
                 </div>
               </div>
               <div className="error-details">
-                <div><span>{pick("错误", "Error")}</span><code>{error}</code></div>
+                <div><span>{t("task.error")}</span><code>{error}</code></div>
               </div>
               <div className="error-actions">
-                <button type="button" className="btn btn-primary" onClick={() => void refresh()}>{pick("重新连接", "Reconnect")}</button>
+                <button type="button" className="btn btn-primary" onClick={() => void refresh()}>{t("error.reconnect")}</button>
               </div>
             </div>
           ) : loading && !settings ? (
-            <div className="loading-state"><div className="spinner" /> {pick("正在读取任务…", "Loading tasks…")}</div>
+            <div className="loading-state"><div className="spinner" /> {t("tasks.loading")}</div>
           ) : view === "overview" && settings ? (
             <Overview
               tasks={tasks}
@@ -560,12 +557,12 @@ function App() {
 
           {clipboardUrl && !addOpen && (
             <div className="clipboard-toast">
-              <div className="clipboard-toast-head"><span className="status-dot" /> {pick("剪贴板检测到链接", "Link found in clipboard")}</div>
+              <div className="clipboard-toast-head"><span className="status-dot" /> {t("clipboard.detected")}</div>
               <div className="clipboard-toast-body">
                 <code title={clipboardUrl}>{clipboardUrl}</code>
                 <div className="clipboard-toast-actions">
-                  <button type="button" className="btn btn-sm" onClick={() => setClipboardUrl(null)}>{pick("忽略", "Ignore")}</button>
-                  <button type="button" className="btn btn-sm btn-primary" onClick={() => { setAddInitialUrl(clipboardUrl); setAddOpen(true); setClipboardUrl(null); }}>{pick("新建下载", "New download")}</button>
+                  <button type="button" className="btn btn-sm" onClick={() => setClipboardUrl(null)}>{t("clipboard.dismiss")}</button>
+                  <button type="button" className="btn btn-sm btn-primary" onClick={() => { setAddInitialUrl(clipboardUrl); setAddOpen(true); setClipboardUrl(null); }}>{t("toolbar.new")}</button>
                 </div>
               </div>
             </div>

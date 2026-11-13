@@ -10,30 +10,18 @@ import {
 import { enUS } from "./en-US";
 import { zhCN, type MessageKey } from "./zh-CN";
 
-/**
- * 语言注册表。新增语言时：
- * 1. 新建对应字典并按 `MessageKey` 补全；
- * 2. 在这里注册；
- * 3. 在设置页暴露切换入口。
- */
-const dictionaries = {
-  "zh-CN": zhCN,
-  "en-US": enUS,
-} as const satisfies Record<string, Record<MessageKey, string>>;
-
-export type Locale = keyof typeof dictionaries;
-
-const LOCALE_STORAGE_KEY = "tug.locale";
-
+import { zhTW } from "./zh-TW";
+import { jaJP } from "./ja-JP";
+import { koKR } from "./ko-KR";
+import { detectLocale, LOCALE_STORAGE_KEY, type Locale } from "./locales";
+import { invoke } from "@tauri-apps/api/core";
+export { SUPPORTED_LOCALES } from "./locales";
+export type { Locale } from "./locales";
+const dictionaries = { "zh-CN": zhCN, "zh-TW": zhTW, "en-US": enUS, "ja-JP": jaJP, "ko-KR": koKR } satisfies Record<Locale, Record<MessageKey,string>>;
 function readInitialLocale(): Locale {
-  try {
-    const saved = window.localStorage.getItem(LOCALE_STORAGE_KEY);
-    if (saved === "zh-CN" || saved === "en-US") return saved;
-    if (navigator.language.toLowerCase().startsWith("en")) return "en-US";
-  } catch {
-    // localStorage 在受限环境下可能不可用，回退到中文。
-  }
-  return "zh-CN";
+  let storage: Storage | null = null;
+  try { storage = window.localStorage; } catch { /* Use system language. */ }
+  return detectLocale(storage, navigator);
 }
 
 type Vars = Record<string, string | number>;
@@ -42,7 +30,6 @@ interface I18nValue {
   locale: Locale;
   setLocale: (locale: Locale) => void;
   t: (key: MessageKey, vars?: Vars) => string;
-  pick: (zh: string, en: string) => string;
 }
 
 const I18nContext = createContext<I18nValue | null>(null);
@@ -51,6 +38,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(readInitialLocale);
 
   const setLocale = useCallback((next: Locale) => {
+    if (!Object.prototype.hasOwnProperty.call(dictionaries, next)) return;
     setLocaleState(next);
     try {
       window.localStorage.setItem(LOCALE_STORAGE_KEY, next);
@@ -61,6 +49,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     document.documentElement.lang = locale;
+    // Native tray and notification labels follow the resolved language immediately.
+    void invoke("set_ui_locale", { locale }).catch(() => { /* Browser preview has no native bridge. */ });
   }, [locale]);
 
   const value = useMemo<I18nValue>(() => {
@@ -70,7 +60,8 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       locale,
       setLocale,
       t: (key, vars) => {
-        let text = dictionary[key] ?? key;
+        const singular = (vars?.count ?? vars?.peers) === 1 ? dictionary[`${key}.one` as MessageKey] : undefined;
+        let text = singular ?? dictionary[key] ?? enUS[key];
         if (vars) {
           for (const [name, value] of Object.entries(vars)) {
             text = text.split(`{${name}}`).join(String(value));
@@ -78,7 +69,6 @@ export function I18nProvider({ children }: { children: ReactNode }) {
         }
         return text;
       },
-      pick: (zh, en) => (locale === "en-US" ? en : zh),
     };
   }, [locale, setLocale]);
 
