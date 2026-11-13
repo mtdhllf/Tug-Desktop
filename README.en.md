@@ -5,7 +5,7 @@
 <p align="center">Windows desktop downloader · HTTP/HTTPS · BitTorrent · Magnet links · Multi-connection · Resume support</p>
 
 <p align="center">
-  <a href="https://github.com/mtdhllf/Tug-Desktop/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/mtdhllf/Tug-Desktop?display_name=tag&sort=semver"></a>
+  <a href="https://github.com/nanio-dev/Tug-Desktop/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/nanio-dev/Tug-Desktop?display_name=tag&sort=semver"></a>
   <img alt="Windows 10/11 x64" src="https://img.shields.io/badge/Windows-10%2F11%20x64-0078D4?logo=windows&logoColor=white">
   <img alt="Rust 2024" src="https://img.shields.io/badge/Rust-2024-000000?logo=rust&logoColor=white">
   <img alt="Tauri 2" src="https://img.shields.io/badge/Tauri-2-24C8DB?logo=tauri&logoColor=white">
@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  Current version <b>v1.0.0</b> · Android version: <a href="https://github.com/mtdhllf/Tug-Android">Tug-Android</a>
+  Current version <b>v1.0.0</b> · Android version: <a href="https://github.com/nanio-dev/Tug-Android">Tug-Android</a>
 </p>
 
 ---
@@ -34,11 +34,11 @@
 
 | File | Description |
 |---|---|
-| [Tug-1.0.0-x64-setup.exe](https://github.com/mtdhllf/Tug-Desktop/releases/download/v1.0.0/Tug-1.0.0-x64-setup.exe) | Windows 10/11 x64 installer |
-| [Tug-1.0.0-portable.zip](https://github.com/mtdhllf/Tug-Desktop/releases/download/v1.0.0/Tug-1.0.0-portable.zip) | Portable version, no installation needed |
-| [SHA256SUMS.txt](https://github.com/mtdhllf/Tug-Desktop/releases/download/v1.0.0/SHA256SUMS.txt) | Download checksums |
+| [Tug-1.0.0-x64-setup.exe](https://github.com/nanio-dev/Tug-Desktop/releases/download/v1.0.0/Tug-1.0.0-x64-setup.exe) | Windows 10/11 x64 installer |
+| [Tug-1.0.0-portable.zip](https://github.com/nanio-dev/Tug-Desktop/releases/download/v1.0.0/Tug-1.0.0-portable.zip) | Portable version, no installation needed |
+| [SHA256SUMS.txt](https://github.com/nanio-dev/Tug-Desktop/releases/download/v1.0.0/SHA256SUMS.txt) | Download checksums |
 
-For more versions, see [GitHub Releases](https://github.com/mtdhllf/Tug-Desktop/releases).
+For more versions, see [GitHub Releases](https://github.com/nanio-dev/Tug-Desktop/releases).
 
 ## Screenshots
 
